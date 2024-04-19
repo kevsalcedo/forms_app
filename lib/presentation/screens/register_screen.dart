@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:forms_app/presentation/blocs/register/register_cubit.dart';
 import 'package:forms_app/presentation/widgets/widgets.dart';
 
 class RegisterScreen extends StatelessWidget {
@@ -10,7 +12,10 @@ class RegisterScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("New user"),
       ),
-      body: const _RegisterView(),
+      body: BlocProvider(
+        create: (context) => RegisterCubit(),
+        child: const _RegisterView(),
+      ),
     );
   }
 }
@@ -36,49 +41,65 @@ class _RegisterView extends StatelessWidget {
   }
 }
 
-class _RegisterForm extends StatefulWidget {
+class _RegisterForm extends StatelessWidget {
   const _RegisterForm();
 
-  @override
-  State<_RegisterForm> createState() => _RegisterFormState();
-}
-
-class _RegisterFormState extends State<_RegisterForm> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  String username = '';
-  String email = '';
-  String password = '';
-
+  //final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+    final registerCubit = context.watch<RegisterCubit>();
+
+    final username = registerCubit.state.username;
+    final password = registerCubit.state.password;
+    final email = registerCubit.state.email;
+
     return Form(
-        key: _formKey,
+        //key: _formKey,
         child: Column(
-          children: [
-            CustomTextFormField(
-              label: "User name",
-              onChanged: (value) => username = value,
-            ),
-            const SizedBox(height: 10),
-            CustomTextFormField(
-              label: "Email",
-              onChanged: (value) => email = value,
-            ),
-            const SizedBox(height: 10),
-            CustomTextFormField(
-              label: "Password",
-              onChanged: (value) => password = value,
-              obscureText: true,
-            ),
-            const SizedBox(height: 10),
-            FilledButton.tonalIcon(
-              onPressed: () {},
-              icon: const Icon(Icons.save),
-              label: const Text("Create user"),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ));
+      children: [
+        CustomTextFormField(
+          label: "User name",
+          errorMessage: username.errorMessage,
+          onChanged: registerCubit.usernameChanged,
+          /* (value) {
+            registerCubit.usernameChanged(value);
+            //_formKey.currentState?.validate();
+          }, */
+        ),
+        const SizedBox(height: 10),
+        CustomTextFormField(
+          label: "Email",
+          errorMessage: email.errorMessage,
+          onChanged: registerCubit.emailChanged,
+          /* (value) {
+            registerCubit.emailChanged(value);
+            //_formKey.currentState?.validate();
+          }, */
+        ),
+        const SizedBox(height: 10),
+        CustomTextFormField(
+          label: "Password",
+          errorMessage: password.errorMessage,
+          onChanged: registerCubit.passwordChanged,
+          /* (value) {
+            registerCubit.passwordChanged(value);
+            //_formKey.currentState?.validate();
+          }, */
+          obscureText: true,
+        ),
+        const SizedBox(height: 10),
+        FilledButton.tonalIcon(
+          onPressed: () {
+            /* final isValid = _formKey.currentState!.validate();
+                if (!isValid) return; */
+
+            registerCubit.onSubmit();
+          },
+          icon: const Icon(Icons.save),
+          label: const Text("Create user"),
+        ),
+        const SizedBox(height: 20),
+      ],
+    ));
   }
 }
